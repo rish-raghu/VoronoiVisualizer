@@ -9,6 +9,8 @@ class DCEL:
             self.prev = None
             self.face = None
             self.internal = None # for debugging
+            # is vertical line that travels infinitely in the positive y direction
+            self.topVertical = False 
 
     class Vertex:
         def __init__(self):

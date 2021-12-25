@@ -1,5 +1,6 @@
 # Implements binary search tree
 import utils
+import math
 
 class Leaf:
         def __init__(self, site):
@@ -60,24 +61,52 @@ class BST:
         return currNode
 
 
-    def insertSite(self, newSite, sweepline):
+    def insertSite(self, newSite, sweepline, isFirstSweepline=False):
 
         if not self.root:
             self.root = Leaf(newSite)
-            return None
+            return {}
+
+        if isFirstSweepline:
+            currNode = self.root
+            while isinstance(currNode, Internal):
+                currNode = currNode.rightNode
+            newInternal = Internal(currNode.site, newSite)
+            if currNode is self.root:
+                self.root = newInternal
+            else:
+                newInternal.parent = currNode.parent
+                newInternal.parent.rightNode = newInternal
+            newInternal.leftNode = currNode
+            currNode.parent = newInternal
+            newLeaf = Leaf(newSite)
+            newInternal.rightNode = newLeaf
+            newLeaf.parent = newInternal
+            return {'newInternal': newInternal}
 
         # Find arc directly above newSite
         currNode = self.root
         while True:
             if isinstance(currNode, Leaf):
                 break
-            breakpointX = utils.computeBreakpoint(currNode.leftSite, currNode.rightSite, sweepline)
-            if newSite[0] < breakpointX:
-                currNode = currNode.leftNode
-            elif newSite[0] > breakpointX:
-                currNode = currNode.rightNode
+            if math.isclose(currNode.leftSite[1], sweepline):
+                if newSite[0] < currNode.leftSite[0]:
+                    currNode = currNode.leftNode
+                else:
+                    currNode = currNode.rightNode
+            elif math.isclose(currNode.rightSite[1], sweepline):
+                if newSite[0] < currNode.rightSite[0]:
+                    currNode = currNode.leftNode
+                else:
+                    currNode = currNode.rightNode
             else:
-                raise NotImplementedError
+                breakpoint = utils.computeBreakpoint(currNode.leftSite, currNode.rightSite, sweepline)
+                if newSite[0] < breakpoint[0]:
+                    currNode = currNode.leftNode
+                elif newSite[0] > breakpoint[0]:
+                    currNode = currNode.rightNode
+                else:
+                    raise NotImplementedError
         
         # Split arc with newSite
         oldSite = currNode.site
